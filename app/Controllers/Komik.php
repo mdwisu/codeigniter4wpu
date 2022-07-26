@@ -7,7 +7,8 @@ use App\Models\KomikModel;
 class Komik extends BaseController
 {
     protected $komikModel;
-    public function __construct() {
+    public function __construct()
+    {
         $this->komikModel = new KomikModel();
     }
 
@@ -26,12 +27,11 @@ class Komik extends BaseController
     {
         $data = [
             'title' => 'Detail Komik',
-            'komik'=>  $this->komikModel->getKomik($slug),
+            'komik' =>  $this->komikModel->getKomik($slug),
         ];
 
         if (empty($data['komik'])) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException('Judul komik '. $slug . ' tidak ditemukan');
-            
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Judul komik ' . $slug . ' tidak ditemukan');
         }
         return view('komik/detail', $data);
     }
@@ -57,9 +57,29 @@ class Komik extends BaseController
                     'is_unique' => '{field} komik sudah terdaftar'
                 ],
             ],
+            'sampul' => [
+                'rules' => 'max_size[sampul,1024]|mime_in[sampul,image/png,image/jpg,image/jpeg]|is_image[sampul]',
+                'errors' => [
+                    'max_size' => 'ukuran gambar terlalu besar',
+                    'mime_in' => 'extension gambar tidak sesuai',
+                    'is_image' => 'file yang diupload bukan gambar'
+                ]
+            ]
         ])) {
-            $validation = \Config\Services::validation();
-            return redirect()->to('komik/create')->withInput()->with('validation', $validation);
+            // $validation = \Config\Services::validation();
+            // return redirect()->to('komik/create')->withInput()->with('validation', $validation);
+            return redirect()->to('komik/create')->withInput();
+        }
+        // ambil gambar
+        $fileSampul = $this->request->getFile('sampul');
+        // apakah tida ada gambar
+        if ($fileSampul->getError() == 4) {
+            $namaSampul = 'default.jpg';
+        } else {
+            // generate nama sampul random
+            $namaSampul = $fileSampul->getRandomName();
+            // pindahkan file img
+            $fileSampul->move('img', $namaSampul);
         }
         // input
         $slug = url_title($this->request->getVar('judul'), '-', true);
@@ -68,7 +88,7 @@ class Komik extends BaseController
             'slug' => $slug,
             'penulis' => $this->request->getVar('penulis'),
             'penerbit' => $this->request->getVar('penerbit'),
-            'sampul' => $this->request->getVar('sampul')
+            'sampul' => $namaSampul
         ]);
 
         session()->setFlashdata('pesan', 'Data Berhasil ditambahkan');
@@ -101,8 +121,8 @@ class Komik extends BaseController
         // }else{
         //     $rule_judul = 'required|is_unique[komik.judul,slug,{slug}]';
         // }
-         // validasi input
-         if (!$this->validate([
+        // validasi input
+        if (!$this->validate([
             'judul' => [
                 'rules' => 'required|is_unique[komik.judul,slug,{slug}]',
                 'errors' => [
@@ -117,7 +137,7 @@ class Komik extends BaseController
         // update
         $slug = url_title($this->request->getVar('judul'), '-', true);
         $this->komikModel->save([
-            'id' =>$id,
+            'id' => $id,
             'judul' => $this->request->getVar('judul'),
             'slug' => $slug,
             'penulis' => $this->request->getVar('penulis'),
