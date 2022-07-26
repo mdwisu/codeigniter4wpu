@@ -46,6 +46,7 @@ $routes->group('komik', static function ($routes) {
     $routes->get('edit/(:segment)', 'Komik::edit/$1');
     $routes->get('(:segment)', 'Komik::detail/$1');
     $routes->post('save', 'Komik::save');
+    $routes->post('update/(:segment)', 'Komik::update/$1');
     $routes->delete('(:num)', 'Komik::delete/$1');
 });
 
