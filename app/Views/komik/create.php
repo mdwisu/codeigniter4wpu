@@ -30,8 +30,9 @@
                 </div>
                 <div class="row mb-3">
                     <label for="sampul" class="col-sm-2 col-form-label">Sampul</label>
-                    <div class="col-sm-10">
-                        <input type="file" class="form-control <?= ($validation->hasError('sampul')) ? 'is-invalid' : ''; ?>" id="sampul" name="sampul">
+                    <div class="col-sm-2"><img src="/img/default.jpg" class="img-thumbnail" id="img-preview"></div>
+                    <div class="col-sm-8">
+                        <input type="file" class="form-control <?= ($validation->hasError('sampul')) ? 'is-invalid' : ''; ?>" id="sampul" name="sampul" onchange="previewImg()">
                         <div class="invalid-feedback">
                             <?= $validation->getError('sampul'); ?>
                         </div>
@@ -42,6 +43,19 @@
         </div>
     </div>
 </div>
+<script>
+    function previewImg() {
+        const sampul = document.getElementById('sampul');
+        const imgPreview = document.getElementById('img-preview');
 
+        let fileSampul = new FileReader();
+        console.log(fileSampul);
+        fileSampul.readAsDataURL(sampul.files[0]);
+
+        fileSampul.onload = function(e) {
+            imgPreview.src = e.target.result;
+        }
+    }
+</script>
 
 <?= $this->endSection(); ?>

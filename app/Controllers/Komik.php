@@ -66,8 +66,6 @@ class Komik extends BaseController
                 ]
             ]
         ])) {
-            // $validation = \Config\Services::validation();
-            // return redirect()->to('komik/create')->withInput()->with('validation', $validation);
             return redirect()->to('komik/create')->withInput();
         }
         // ambil gambar
@@ -97,6 +95,14 @@ class Komik extends BaseController
 
     public function delete($id)
     {
+        // cari gambar berdasarkan id
+        $komik = $this->komikModel->find($id);
+        // cek apabila gambar default jan dihapus
+        if ($komik['sampul'] != 'default.jpg') {
+            // hapus gambar
+            unlink('img/'. $komik['sampul']);
+        }
+        // delete data
         $this->komikModel->delete($id);
         session()->setFlashdata('pesan', 'Data Berhasil dihapus');
         return redirect()->to('/komik');
@@ -129,10 +135,17 @@ class Komik extends BaseController
                     'required' => '{field} komik harus diisi',
                     'is_unique' => '{field} komik sudah terdaftar'
                 ],
-            ],
+                'sampul' => [
+                    'rules' => 'max_size[sampul,1024]|mime_in[sampul,image/png,image/jpg,image/jpeg]|is_image[sampul]',
+                    'errors' => [
+                        'max_size' => 'ukuran gambar terlalu besar',
+                        'mime_in' => 'extension gambar tidak sesuai',
+                        'is_image' => 'file yang diupload bukan gambar'
+                    ]
+                ]
+            ]
         ])) {
-            $validation = \Config\Services::validation();
-            return redirect()->to('komik/edit/' . $this->request->getVar('slug'))->withInput()->with('validation', $validation);
+            return redirect()->to('komik/edit/' . $this->request->getVar('slug'))->withInput();
         }
         // update
         $slug = url_title($this->request->getVar('judul'), '-', true);
