@@ -147,6 +147,19 @@ class Komik extends BaseController
         ])) {
             return redirect()->to('komik/edit/' . $this->request->getVar('slug'))->withInput();
         }
+
+        $fileSampul = $this->request->getFile('sampul');
+        // cek gambar, apakah tetap gambar lama
+        if ($fileSampul->getError() == 4) {
+            $namaSampul = $this->request->getVar('sampulLama');
+        } else {
+            // generate nama file random
+            $namaSampul = $fileSampul->getRandomName();
+            // pindahkan gambar
+            $fileSampul->move('img', $namaSampul);
+            // hapus file lama
+            unlink('img/' . $this->request->getVar('sampulLama'));
+        }
         // update
         $slug = url_title($this->request->getVar('judul'), '-', true);
         $this->komikModel->save([
@@ -155,7 +168,7 @@ class Komik extends BaseController
             'slug' => $slug,
             'penulis' => $this->request->getVar('penulis'),
             'penerbit' => $this->request->getVar('penerbit'),
-            'sampul' => $this->request->getVar('sampul')
+            'sampul' => $namaSampul
         ]);
 
         session()->setFlashdata('pesan', 'Data Berhasil diubah');
