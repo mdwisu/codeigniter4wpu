@@ -49,6 +49,9 @@ $routes->group('komik', static function ($routes) {
     $routes->post('update/(:segment)', 'Komik::update/$1');
     $routes->delete('(:num)', 'Komik::delete/$1');
 });
+$routes->group('orang', static function ($routes) {
+    $routes->get('/', 'Orang::index');
+});
 
 
  
